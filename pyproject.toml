@@ -1,0 +1,28 @@
+[project]
+name = "customer-intelligence-copilot"
+version = "0.1.0"
+description = "A production-minded AI engineering project exploring RAG, customer analytics, and grounded AI assistants."
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "pandas>=3.0.6",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 88
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/customer_intelligence"]
