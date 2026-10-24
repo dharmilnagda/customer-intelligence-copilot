@@ -5,9 +5,20 @@ import pytest
 from customer_intelligence.question_answering import answer_question
 
 
+
+
 @pytest.fixture
 def customers():
-    return pd.DataFrame({"churn": [0, 1, 0, 1, 0, 0, 1, 0, 0, 1]})
+    return pd.DataFrame(
+        {
+            "customer_id": [
+                "C001", "C002", "C003", "C004", "C005",
+                "C006", "C007", "C008", "C009", "C010",
+            ],
+            "churn": [0, 1, 0, 1, 0, 0, 1, 0, 0, 1],
+        }
+    )
+
 
 
 def test_answers_churn_rate_question(customers):
@@ -40,3 +51,30 @@ def test_handles_unsupported_question(customers):
 def test_rejects_empty_question(customers):
     with pytest.raises(ValueError, match="Question cannot be empty"):
         answer_question("   ", customers)
+
+
+def test_answers_customer_status_question(customers):
+    result = answer_question(
+        "What is the churn status of customer C004?",
+        customers,
+    )
+
+    assert result == "Customer C004 is churned."
+
+
+def test_answers_lowercase_customer_id(customers):
+    result = answer_question(
+        "What is the status of customer c001?",
+        customers,
+    )
+
+    assert result == "Customer C001 is retained."
+
+
+def test_handles_unknown_customer(customers):
+    result = answer_question(
+        "What is the status of customer C999?",
+        customers,
+    )
+
+    assert result == "Customer C999 was not found."

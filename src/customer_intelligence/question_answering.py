@@ -3,7 +3,9 @@ import pandas as pd
 
 from customer_intelligence.customer_analytics import (
     calculate_churn_summary,
+    get_customer_status,
 )
+
 
 
 def answer_question(
@@ -17,6 +19,35 @@ def answer_question(
     normalized_question = question.lower().strip().rstrip("?!.")
 
     summary = calculate_churn_summary(customers)
+
+
+    import re
+
+    customer_match = re.search(
+        r"\bC\d+\b",
+        question,
+        re.IGNORECASE,
+    )
+
+    if customer_match and any(
+        word in normalized_question
+        for word in ("customer", "status", "churned", "retained")
+    ):
+        customer_id = customer_match.group().upper()
+        
+        try:
+            customer = get_customer_status(customers, customer_id)
+        except ValueError as error:
+            if "was not found" in str(error):
+                return f"Customer {customer_id} was not found."
+            raise
+
+
+        return (
+            f"Customer {customer['customer_id']} is "
+            f"{customer['status'].lower()}."
+        )
+
 
     if "churn rate" in normalized_question:
         return (

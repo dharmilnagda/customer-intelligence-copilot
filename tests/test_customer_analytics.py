@@ -4,6 +4,7 @@ import pytest
 
 from customer_intelligence.customer_analytics import (
     calculate_churn_summary,
+    get_customer_status,
 )
 
 
@@ -45,3 +46,56 @@ def test_rejects_missing_churn_values():
     with pytest.raises(ValueError, match="missing values"):
         calculate_churn_summary(customers)
 
+
+def test_get_customer_status_for_churned_customer():
+    customers = pd.DataFrame(
+        {
+            "customer_id": ["C001", "C002"],
+            "churn": [0, 1],
+        }
+    )
+
+    result = get_customer_status(customers, "C002")
+
+    assert result == {
+        "customer_id": "C002",
+        "churn": 1,
+        "status": "Churned",
+    }
+
+
+def test_get_customer_status_for_retained_customer():
+    customers = pd.DataFrame(
+        {
+            "customer_id": ["C001", "C002"],
+            "churn": [0, 1],
+        }
+    )
+
+    result = get_customer_status(customers, "C001")
+
+    assert result["status"] == "Retained"
+
+
+def test_get_customer_status_for_unknown_customer():
+    customers = pd.DataFrame(
+        {
+            "customer_id": ["C001"],
+            "churn": [0],
+        }
+    )
+
+    with pytest.raises(ValueError, match="was not found"):
+        get_customer_status(customers, "C999")
+
+
+def test_get_customer_status_rejects_duplicate_ids():
+    customers = pd.DataFrame(
+        {
+            "customer_id": ["C001", "C001"],
+            "churn": [0, 1],
+        }
+    )
+
+    with pytest.raises(ValueError, match="must be unique"):
+        get_customer_status(customers, "C001")
