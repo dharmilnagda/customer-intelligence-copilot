@@ -9,11 +9,12 @@ from customer_intelligence.customer_analytics import (
     calculate_churn_summary,
 )
 from customer_intelligence.customer_insights import summarize_churn
+from customer_intelligence.question_answering import answer_question
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Generate a customer churn summary."
+        description="Generate customer analytics and answer questions."
     )
     parser.add_argument(
         "--input",
@@ -21,12 +22,22 @@ def main() -> None:
         default=Path("data/customers.csv"),
         help="Path to a customer CSV file.",
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--question",
+        type=str,
+        help="Ask a question about the customer data.",
+    )
 
+    args = parser.parse_args()
     customers = pd.read_csv(args.input)
+
+    if args.question:
+        answer = answer_question(args.question, customers)
+        print(answer)
+        return
+
     summary = calculate_churn_summary(customers)
     summary["business_summary"] = summarize_churn(summary)
-
     print(json.dumps(summary, indent=2))
 
 
